@@ -15,7 +15,7 @@ const formatRegExp = /%[sdj%]/g;
 
 declare var ASYNC_VALIDATOR_NO_WARNING;
 
-export let warning: (type: string, errors: SyncErrorType[]) => void = () => {};
+export let warning: (type: string, errors: SyncErrorType[]) => void = () => { };
 
 // don't print warning message when in production env or node runtime
 if (
@@ -155,7 +155,11 @@ function asyncSerialArray(
     const original = index;
     index = index + 1;
     if (original < arrLength) {
-      func(arr[original], next);
+      func(arr[original], function (errors) {
+        queueMicrotask(() => {
+          next(errors);
+        })
+      });
     } else {
       callback([]);
     }
@@ -229,8 +233,8 @@ export function asyncMap(
         callback(results);
         return results.length
           ? reject(
-              new AsyncValidationError(results, convertFieldsError(results)),
-            )
+            new AsyncValidationError(results, convertFieldsError(results)),
+          )
           : resolve(source);
       }
     };
